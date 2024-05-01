@@ -1,0 +1,92 @@
+<Directory /srv/www>
+       Options Indexes FollowSymLinks
+       AllowOverride None
+       Require all granted
+</Directory>
+
+<VirtualHost www.asf.com:80>
+   ServerAdmin webmaster@asf.com
+   ServerName www.asf.com
+   DocumentRoot /srv/www/express
+   ErrorLog /var/log/apache2/express-error.log
+   CustomLog /var/log/apache2/express-access.log combined
+</VirtualHost>
+
+127.0.0.1       localhost
+172.17.177.200  www.asf.com  www
+
+
+
+archive { '/tmp/express.zip':
+  source => 'https://github.com/rogerramossilva/devops/raw/master/express.zip',
+  extract => true,
+  extract_path => '/srv/www',
+  user => 'root',
+  group => 'www-data',
+  cleanup => false,
+}
+
+
+
+
+#############################################################################
+puppetserver file
+
+[master]
+dns_alt_names=puppet.asf.com
+
+[main]
+certname = puppet.asf.com
+server = puppet.asf.com
+environment = production
+runinterval = 1h
+
+
+
+#############################################################################
+puppet.conf file agent
+
+[main]
+certname = web.asf.com
+server = puppet.asf.com
+environment = production 
+runinterval = 10m
+
+
+#########################
+# /n comando para mascarar senha passada com echo
+echo - n LinuxForce01 |openssl passwd -6 -stdin 
+$6$ATVImUXSIc3i81nQ$TLDj9Rp7ukKH5WlSV14kaVKUp2pZYEUqXSSTfq4et1eGnysQKcG17e/We0.x3XrZ4p2nn/LYCn7MV.bom5uBN/
+#############################  
+#####arquivo userandgroup.pp  
+
+node 'default' {
+user { 'analista':
+  ensure             => 'present',
+  comment            => 'Analista',
+  gid                => 2000,
+  groups	     => ['g_ti'],
+  home               => '/home/analista',
+  password           => '$6$X2H/RzB1b0Vwdir7$978s9iTN7ZWhCpqAYDVr2Lv2cYYsxEncxcVI5FcUPknyi/69Zv6MqgZkeGTcwcg6KUFYzCzb4ch/LUCUINr6Y.',
+  password_max_age   => 90,
+  password_min_age   => 0,
+  password_warn_days => 7,
+  provider           => 'useradd',
+  shell              => '/bin/bash',
+  uid                => 5001,
+}
+#$6$ATVImUXSIc3i81nQ$TLDj9Rp7ukKH5WlSV14kaVKUp2pZYEUqXSSTfq4et1eGnysQKcG17e/We0.x3XrZ4p2nn/LYCn7MV.bom5uBN/
+
+group { 'g_ti':
+	ensure => present,
+	gid    => 2000,
+}
+
+case $operatingsystem {
+  'Ubuntu', 'Debian': {
+	package {'vim':
+	  ensure => installed,
+	}
+  }
+}
+}
