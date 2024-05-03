@@ -11,6 +11,7 @@ pipeline {
             steps {
                 // Testes automatizados da aplicação
 		sh 'docker ps'
+		sh 'docker images'
                 sh 'docker-compose -f docker-compose.yml down'
 
                 // Realize os testes nos serviços em execução
