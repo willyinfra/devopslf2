@@ -1,0 +1,30 @@
+pipeline {
+    agent any
+    environment {
+        DOCKERFILE_WEB = 'Dockerfileweb'       // Nome do Dockerfile para a imagem web
+        DOCKERFILE_DB = 'Dockerfiledb'         // Nome do Dockerfile para a imagem db
+        DOCKERFILE_NGINX = 'Dockerfilenginx'   // Nome do Dockerfile para a imagem nginx
+        DOCKER_IMAGE_TAG = 'latest'            // Tag da imagem Docker a ser construída
+    }
+    stages {
+        stage('Subir Aplicação') {
+            steps {
+                // Testes automatizados da aplicação
+		sh 'docker rm -f $(docker ps -a -q)'
+                sh 'docker-compose -f docker-compose.yml up -d'
+
+                // Realize os testes nos serviços em execução
+                // Exemplo de teste usando curl para verificar se o serviço web está respondendo
+                sh 'curl -I http://localhost'
+		
+		sh 'docker ps'
+            }
+        }
+        stage('Aprovação') {
+            steps {
+                input 'Deseja prosseguir com o Deploy e Push?'
+            }
+        }
+
+}
+
